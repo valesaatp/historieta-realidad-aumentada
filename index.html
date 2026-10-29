@@ -82,7 +82,6 @@ main {
   display: block;
   width: 100%;
   height: auto;
-  object-fit: contain;
 }
 
 .panel-content {
@@ -146,7 +145,7 @@ button.secondary {
   line-height: 1.5;
 }
 
-/* Visor de realidad aumentada */
+/* Visor AR */
 #ar-container {
   position: relative;
   width: 100%;
@@ -156,7 +155,6 @@ button.secondary {
   border-radius: 14px;
   overflow: hidden;
   background: #000;
-  isolation: isolate;
 }
 
 /* Escena A-Frame */
@@ -166,23 +164,26 @@ button.secondary {
   width: 100% !important;
   height: 100% !important;
   display: block !important;
+  background: transparent !important;
 }
 
-/* Lienzo de realidad aumentada */
-#ar-container canvas,
-#ar-container .a-canvas {
-  position: absolute !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  pointer-events: none;
-}
+/*
+  No se fuerza el z-index del video ni del canvas.
+  MindAR controla su orden interno.
+*/
 
-/* Video de cámara */
 #ar-container video {
   position: absolute !important;
   max-width: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
   object-fit: cover !important;
+}
+
+#ar-container canvas,
+#ar-container .a-canvas {
+  background: transparent !important;
+  pointer-events: none !important;
 }
 
 footer {
@@ -226,12 +227,10 @@ footer {
 <main>
   <section class="intro">
     <strong>¿Cómo leerla?</strong>
-    Recorre las cuatro escenas en orden. Después inicia la cámara y apunta hacia
-    una de las ilustraciones para ver el contenido digital.
+    Recorre las cuatro escenas en orden. Después inicia la cámara y apunta hacia una de las ilustraciones para ver el contenido digital.
   </section>
 
   <section class="grid" aria-label="Las cuatro escenas">
-
     <article class="panel">
       <img src="./escena1.png" alt="Escena 1: Vanessa descubre una computadora antigua">
       <div class="panel-content">
@@ -263,7 +262,6 @@ footer {
         <p>Vanessa estabiliza el portal y el robot regresa a casa. Antes de irse, le agradece por ayudarlo.</p>
       </div>
     </article>
-
   </section>
 
   <section class="ar">
@@ -280,7 +278,6 @@ footer {
     </div>
 
     <div id="ar-container"></div>
-
     <small>Se necesita permiso de cámara y conexión HTTPS.</small>
   </section>
 </main>
@@ -315,11 +312,9 @@ function stopCurrentScene() {
       const system = scene.systems &&
         scene.systems["mindar-image-system"];
 
-      if (system) {
-        system.stop();
-      }
+      if (system) system.stop();
     } catch (error) {
-      console.warn("No se pudo detener MindAR:", error);
+      console.warn("Error al detener MindAR:", error);
     }
 
     scene.remove();
@@ -334,24 +329,15 @@ startButton.addEventListener("click", async () => {
 
   starting = true;
   startButton.disabled = true;
-  updateStatus("Preparando la cámara y el visor…");
+  updateStatus("Preparando el visor de realidad aumentada…");
 
   try {
-    if (!navigator.mediaDevices ||
-        !navigator.mediaDevices.getUserMedia) {
-      throw new Error(
-        "Tu navegador no permite acceder a la cámara. Abre la página en Chrome mediante HTTPS."
-      );
-    }
-
     const response = await fetch("./comic.mind", {
       cache: "no-store"
     });
 
     if (!response.ok) {
-      throw new Error(
-        "No se encontró comic.mind. Verifica que esté en la raíz del repositorio."
-      );
+      throw new Error("No se pudo cargar comic.mind.");
     }
 
     const sceneEl = document.createElement("a-scene");
@@ -363,28 +349,22 @@ startButton.addEventListener("click", async () => {
 
     sceneEl.setAttribute("embedded", "");
     sceneEl.setAttribute("color-space", "sRGB");
-    sceneEl.setAttribute("renderer", "colorManagement: true; alpha: true");
+    sceneEl.setAttribute(
+      "renderer",
+      "colorManagement: true; alpha: true"
+    );
     sceneEl.setAttribute("vr-mode-ui", "enabled: false");
     sceneEl.setAttribute(
       "device-orientation-permission-ui",
       "enabled: false"
     );
 
-    sceneEl.style.position = "absolute";
-    sceneEl.style.inset = "0";
-    sceneEl.style.width = "100%";
-    sceneEl.style.height = "100%";
-
     container.replaceChildren(sceneEl);
     scene = sceneEl;
 
     for (let i = 0; i < 4; i++) {
       const target = document.createElement("a-entity");
-
-      target.setAttribute(
-        "mindar-image-target",
-        `targetIndex: ${i}`
-      );
+      target.setAttribute("mindar-image-target", `targetIndex: ${i}`);
 
       const panel = document.createElement("a-plane");
       panel.setAttribute("position", "0 0 0");
@@ -408,55 +388,28 @@ startButton.addEventListener("click", async () => {
       target.appendChild(label);
 
       if (i === 2) {
-        const robot = document.createElement("a-entity");
-
-        robot.setAttribute(
-          "geometry",
-          "primitive: box; width: 0.25; height: 0.25; depth: 0.18"
-        );
-
-        robot.setAttribute(
-          "material",
-          "color: #2b9ed8; metalness: 0.2"
-        );
-
+        const robot = document.createElement("a-box");
+        robot.setAttribute("width", "0.25");
+        robot.setAttribute("height", "0.25");
+        robot.setAttribute("depth", "0.18");
+        robot.setAttribute("material", "color: #2b9ed8");
         robot.setAttribute("position", "0 -0.22 0.1");
-
         robot.setAttribute(
           "animation",
           "property: position; to: 0 -0.12 0.1; dir: alternate; dur: 900; loop: true"
         );
-
         target.appendChild(robot);
-
-        for (const x of [-0.06, 0.06]) {
-          const eye = document.createElement("a-entity");
-
-          eye.setAttribute(
-            "geometry",
-            "primitive: sphere; radius: 0.025"
-          );
-
-          eye.setAttribute("material", "color: white");
-          eye.setAttribute("position", `${x} -0.18 0.2`);
-
-          target.appendChild(eye);
-        }
       }
 
-      sceneEl.appendChild(target);
-
       target.addEventListener("targetFound", () => {
-        updateStatus(
-          `¡Escena ${i + 1} reconocida! ${messages[i]}`
-        );
+        updateStatus(`¡Escena ${i + 1} reconocida! ${messages[i]}`);
       });
 
       target.addEventListener("targetLost", () => {
-        updateStatus(
-          "Apunta nuevamente a una de las cuatro ilustraciones."
-        );
+        updateStatus("Apunta nuevamente hacia una ilustración.");
       });
+
+      sceneEl.appendChild(target);
     }
 
     const camera = document.createElement("a-camera");
@@ -465,23 +418,18 @@ startButton.addEventListener("click", async () => {
     sceneEl.appendChild(camera);
 
     sceneEl.addEventListener("arReady", () => {
-      updateStatus(
-        "¡Cámara activa! Apunta hacia una de las cuatro ilustraciones."
-      );
+      updateStatus("¡Cámara activa! Apunta hacia una ilustración.");
     });
 
     sceneEl.addEventListener("arError", () => {
-      updateStatus(
-        "MindAR no pudo iniciar la cámara. Revisa los permisos y la consola."
-      );
+      updateStatus("Error al iniciar la cámara. Revisa los permisos y la consola.");
     });
 
     await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject(
-          new Error("El visor tardó demasiado en prepararse.")
-        );
-      }, 20000);
+      const timeout = setTimeout(
+        () => reject(new Error("El visor tardó demasiado en prepararse.")),
+        20000
+      );
 
       sceneEl.addEventListener("loaded", () => {
         clearTimeout(timeout);
@@ -489,41 +437,43 @@ startButton.addEventListener("click", async () => {
       }, { once: true });
     });
 
-    const mindarSystem =
-      sceneEl.systems["mindar-image-system"];
+    const system = sceneEl.systems["mindar-image-system"];
 
-    if (!mindarSystem) {
-      throw new Error(
-        "MindAR no se cargó. Comprueba tu conexión a internet."
-      );
+    if (!system) {
+      throw new Error("MindAR no se cargó correctamente.");
     }
 
-    updateStatus(
-      "Iniciando cámara… acepta el permiso si el navegador lo solicita."
-    );
+    updateStatus("Iniciando cámara…");
 
-    await mindarSystem.start();
+    await system.start();
 
-    // Esperar un momento para comprobar que MindAR haya creado el video.
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1200));
 
-    const videos = container.querySelectorAll("video");
+    const video = document.querySelector("#ar-container video");
 
-    if (!videos.length) {
+    if (video) {
+      video.style.setProperty("opacity", "1", "important");
+      video.style.setProperty("visibility", "visible", "important");
+      video.style.setProperty("z-index", "0", "important");
+
+      const canvas = document.querySelector("#ar-container canvas");
+
+      if (canvas) {
+        canvas.style.setProperty("z-index", "1", "important");
+      }
+
       updateStatus(
-        "MindAR se inició, pero no creó el video de cámara. Recarga la página y revisa la consola (F12)."
+        "Cámara iniciada. Apunta a una de las cuatro ilustraciones."
       );
     } else {
       updateStatus(
-        "Cámara iniciada. Apunta hacia una de las cuatro ilustraciones."
+        "No se encontró el video de cámara. Revisa la consola con F12."
       );
     }
 
   } catch (error) {
-    console.error("Error al iniciar la realidad aumentada:", error);
-
+    console.error("Error al iniciar AR:", error);
     updateStatus("Error: " + error.message);
-
     stopCurrentScene();
   } finally {
     starting = false;
