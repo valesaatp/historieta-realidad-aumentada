@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>El secreto de la computadora | Historieta AR</title>
+<meta name="description" content="Historieta interactiva de cuatro escenas con una experiencia de realidad aumentada.">
+<style>
+:root{--ink:#17384c;--blue:#2b9ed8;--cyan:#b9f8ff;--paper:#ffffff;--bg:#eaf6fc}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:linear-gradient(135deg,#eaf6fc,#f7f0ff);color:var(--ink)}
+header{text-align:center;padding:34px 18px 24px;background:linear-gradient(120deg,#17465f,#277e9c);color:white}
+header .tag{display:inline-block;border:1px solid #a8efff;border-radius:99px;padding:6px 13px;font-size:.85rem}
+h1{margin:13px 0 8px;font-size:clamp(2rem,5vw,3.2rem)}header p{max-width:720px;margin:0 auto;color:#e1f7ff;line-height:1.6}
+main{max-width:1100px;margin:0 auto;padding:24px 16px 48px}
+.intro{background:#fff;border-radius:18px;padding:18px 22px;box-shadow:0 8px 25px #17384c12;line-height:1.65;margin-bottom:22px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.panel{background:white;border-radius:18px;overflow:hidden;box-shadow:0 10px 28px #17384c18;border:1px solid #d9edf6}
+.panel img{display:block;width:100%;height:auto}
+.panel-content{padding:17px 19px}.panel h2{margin:0 0 8px;font-size:1.25rem}.panel p{margin:0;line-height:1.55;color:#38566a}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+button,.button{border:0;border-radius:12px;padding:12px 17px;font:inherit;font-weight:700;cursor:pointer;background:#247da1;color:white}
+button:hover,.button:hover{filter:brightness(1.08)}button.secondary{background:#e4f4fa;color:#17465f;border:1px solid #b9dce9}
+.ar{margin-top:28px;background:#12374b;color:white;padding:23px;border-radius:20px}
+.ar h2{margin-top:0}.ar p{line-height:1.65;color:#e0f5ff}.ar small{color:#b9d9e8}
+#ar-container{position:relative;width:100%;min-height:80px;border-radius:14px;overflow:hidden;background:#082638;margin-top:15px}
+#ar-container video{width:100%;height:auto;display:block}
+#ar-status{padding:10px 0;color:#d9f7ff}
+footer{text-align:center;padding:20px;color:#527185;font-size:.9rem}
+@media(max-width:700px){.grid{grid-template-columns:1fr}header{padding-top:26px}.panel-content{padding:15px}}
+</style>
+</head>
+<body>
+<header>
+  <span class="tag">HISTORIETA INTERACTIVA · REALIDAD AUMENTADA</span>
+  <h1>El secreto de la computadora</h1>
+  <p>Una aventura en cuatro escenas donde una estudiante descubre que la tecnología puede conectar mundos.</p>
+</header>
+<main>
+  <section class="intro">
+    <strong>¿Cómo leerla?</strong> Recorre las cuatro escenas en orden. Después prueba la experiencia de realidad aumentada: permite el acceso a la cámara y apunta a una de las ilustraciones impresas o mostradas en otra pantalla. Para activar el reconocimiento visual, primero hay que cargar el archivo de marcadores <code>comic.mind</code> generado a partir de estas cuatro imágenes.
+  </section>
+  <section class="grid" aria-label="Las cuatro escenas de la historieta">
+    <article class="panel"><img src="img/escena1.png" alt="Escena 1: una estudiante descubre una computadora antigua"><div class="panel-content"><h2>1. El hallazgo</h2><p>Vanessa encuentra una computadora antigua en el laboratorio. Al encenderla, descubre que la pantalla tiene un brillo extraño.</p></div></article>
+    <article class="panel"><img src="img/escena2.png" alt="Escena 2: aparece un mensaje misterioso en la pantalla"><div class="panel-content"><h2>2. El mensaje</h2><p>En la pantalla aparece un mensaje: “Hola… ¿me ayudas?”. Vanessa decide averiguar quién está intentando comunicarse.</p></div></article>
+    <article class="panel"><img src="img/escena3.png" alt="Escena 3: un pequeño robot azul sale de un portal digital"><div class="panel-content"><h2>3. El visitante</h2><p>Un pequeño robot holográfico sale de un portal digital. Necesita ayuda para volver al mundo del que proviene.</p></div></article>
+    <article class="panel"><img src="img/escena4.png" alt="Escena 4: Vanessa se despide del robot que regresa a su mundo"><div class="panel-content"><h2>4. Un nuevo amigo</h2><p>Vanessa estabiliza el portal y el robot puede regresar a casa. Antes de irse, le agradece por demostrar que la tecnología también puede crear amistades.</p></div></article>
+  </section>
+  <section class="ar">
+    <h2>✨ Prueba la realidad aumentada</h2>
+    <p>Esta experiencia utiliza la cámara del dispositivo para reconocer las ilustraciones y mostrar contenido digital encima de ellas. Para que el reconocimiento funcione, debes crear el archivo <code>comic.mind</code> con las cuatro imágenes usando el compilador de MindAR y subirlo junto a <code>index.html</code>.</p>
+    <div class="actions">
+      <button id="start-ar">Iniciar cámara AR</button>
+      <button class="secondary" id="stop-ar">Detener cámara</button>
+    </div>
+    <div id="ar-status" role="status">Estado: cámara apagada. Primero configura el archivo comic.mind siguiendo el README.</div>
+    <div id="ar-container"></div>
+    <small>Nota: la cámara requiere permiso del usuario y una conexión HTTPS, como la que ofrece GitHub Pages.</small>
+  </section>
+</main>
+<footer>Proyecto escolar · Realidad aumentada · Historieta de cuatro escenas</footer>
+
+<!-- MindAR y A-Frame: las bibliotecas se cargan desde CDN. -->
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+<script>
+const statusBox = document.getElementById('ar-status');
+const container = document.getElementById('ar-container');
+let arScene = null;
+
+document.getElementById('start-ar').addEventListener('click', async () => {
+  if (arScene) return;
+  statusBox.textContent = 'Preparando cámara…';
+  try {
+    const scene = document.createElement('a-scene');
+    scene.setAttribute('mindar-image', 'imageTargetSrc: ./comic.mind; autoStart: true; uiScanning: yes; uiLoading: yes;');
+    scene.setAttribute('embedded', '');
+    scene.setAttribute('color-space', 'sRGB');
+    scene.setAttribute('renderer', 'colorManagement: true, physicallyCorrectLights');
+    scene.setAttribute('vr-mode-ui', 'enabled: false');
+    scene.setAttribute('device-orientation-permission-ui', 'enabled: false');
+    scene.style.width = '100%';
+    scene.style.minHeight = '320px';
+    scene.style.display = 'block';
+
+    const assets = document.createElement('a-assets');
+    const robot = document.createElement('a-entity');
+    robot.setAttribute('geometry', 'primitive: box; width: 0.35; height: 0.35; depth: 0.25');
+    robot.setAttribute('material', 'color: #2b9ed8; metalness: 0.25; roughness: 0.35');
+    robot.setAttribute('position', '0 0.25 0.1');
+    robot.setAttribute('animation', 'property: position; to: 0 0.38 0.1; dir: alternate; dur: 900; loop: true');
+    const eyes = document.createElement('a-entity');
+    eyes.setAttribute('geometry', 'primitive: sphere; radius: 0.045');
+    eyes.setAttribute('material', 'color: #ffffff');
+    eyes.setAttribute('position', '-0.08 0.04 0.14');
+    const eyes2 = eyes.cloneNode(true);
+    eyes2.setAttribute('position', '0.08 0.04 0.14');
+    const halo = document.createElement('a-entity');
+    halo.setAttribute('geometry', 'primitive: torus; radius: 0.32; radiusTubular: 0.012');
+    halo.setAttribute('material', 'color: #8ce8ff; emissive: #3ccfff');
+    halo.setAttribute('rotation', '90 0 0');
+    halo.setAttribute('position', '0 0 0.05');
+
+    const targetContents = [];
+    for (let i=0; i<4; i++) {
+      const target = document.createElement('a-entity');
+      target.setAttribute('mindar-image-target', `targetIndex: ${i}`);
+      const plane = document.createElement('a-plane');
+      plane.setAttribute('position', '0 0 0');
+      plane.setAttribute('width', '1');
+      plane.setAttribute('height', '0.72');
+      plane.setAttribute('material', 'color: #16384c; opacity: 0.82; transparent: true');
+      const label = document.createElement('a-text');
+      label.setAttribute('value', ['¡Encontraste el misterio!','El mensaje dice: ayúdame.','¡Hola! Soy Pixel, un robot digital.','¡Gracias por ayudarme!'][i]);
+      label.setAttribute('align', 'center');
+      label.setAttribute('color', '#ffffff');
+      label.setAttribute('width', '2.4');
+      label.setAttribute('position', '0 0 0.02');
+      label.setAttribute('scale', '0.65 0.65 0.65');
+      target.appendChild(plane);
+      target.appendChild(label);
+      if (i===2) { target.appendChild(robot.cloneNode(true)); target.appendChild(eyes.cloneNode(true)); target.appendChild(eyes2.cloneNode(true)); target.appendChild(halo.cloneNode(true)); }
+      scene.appendChild(target);
+      targetContents.push(target);
+    }
+    scene.appendChild(assets);
+    container.replaceChildren(scene);
+    arScene = scene;
+    scene.addEventListener('arReady', () => statusBox.textContent = '¡Cámara activa! Apunta a una de las cuatro imágenes para ver el contenido digital.');
+    scene.addEventListener('arError', () => statusBox.textContent = 'No se pudo iniciar la AR. Revisa permisos de cámara y que comic.mind exista.');
+    setTimeout(() => {
+      if (arScene && statusBox.textContent === 'Preparando cámara…') statusBox.textContent = 'Si no aparece la cámara, confirma que subiste comic.mind y permite el acceso a la cámara.';
+    }, 7000);
+  } catch (e) {
+    statusBox.textContent = 'Error al iniciar. Revisa los permisos de cámara y la configuración del archivo comic.mind.';
+  }
+});
+
+document.getElementById('stop-ar').addEventListener('click', () => {
+  if (arScene) {
+    try {
+      const video = container.querySelector('video');
+      if (video && video.srcObject) video.srcObject.getTracks().forEach(track => track.stop());
+      arScene.remove();
+    } catch(e) {}
+    container.replaceChildren();
+    arScene = null;
+  }
+  statusBox.textContent = 'Estado: cámara apagada.';
+});
+</script>
+</body>
+</html>
