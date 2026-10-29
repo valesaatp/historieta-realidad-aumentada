@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -11,9 +11,11 @@
 :root {
   --ink: #17384c;
   --blue: #2b9ed8;
-  --paper: #ffffff;
 }
-* { box-sizing: border-box; }
+
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -37,10 +39,22 @@ header .tag {
   font-size: .85rem;
 }
 
-h1 { font-size: clamp(2rem, 5vw, 3.2rem); margin: 13px 0 8px; }
-header p { max-width: 720px; margin: auto; line-height: 1.6; }
+h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  margin: 13px 0 8px;
+}
 
-main { max-width: 1200px; margin: auto; padding: 24px 16px 48px; }
+header p {
+  max-width: 720px;
+  margin: auto;
+  line-height: 1.6;
+}
+
+main {
+  max-width: 1200px;
+  margin: auto;
+  padding: 24px 16px 48px;
+}
 
 .intro {
   background: white;
@@ -71,9 +85,19 @@ main { max-width: 1200px; margin: auto; padding: 24px 16px 48px; }
   object-fit: contain;
 }
 
-.panel-content { padding: 17px 19px; }
-.panel h2 { margin: 0 0 8px; }
-.panel p { margin: 0; line-height: 1.6; color: #38566a; }
+.panel-content {
+  padding: 17px 19px;
+}
+
+.panel h2 {
+  margin: 0 0 8px;
+}
+
+.panel p {
+  margin: 0;
+  line-height: 1.6;
+  color: #38566a;
+}
 
 .ar {
   margin-top: 30px;
@@ -83,7 +107,10 @@ main { max-width: 1200px; margin: auto; padding: 24px 16px 48px; }
   border-radius: 20px;
 }
 
-.ar p { line-height: 1.65; color: #e0f5ff; }
+.ar p {
+  line-height: 1.65;
+  color: #e0f5ff;
+}
 
 .actions {
   display: flex;
@@ -103,6 +130,11 @@ button {
   color: white;
 }
 
+button:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
 button.secondary {
   background: #e4f4fa;
   color: #17465f;
@@ -114,27 +146,43 @@ button.secondary {
   line-height: 1.5;
 }
 
+/* Visor de realidad aumentada */
 #ar-container {
   position: relative;
   width: 100%;
   height: min(70vh, 600px);
   min-height: 360px;
+  margin-top: 12px;
   border-radius: 14px;
   overflow: hidden;
-  background: #082638;
-  margin-top: 12px;
+  background: #000;
+  isolation: isolate;
 }
 
+/* Escena A-Frame */
 #ar-container a-scene {
   position: absolute !important;
-  inset: 0;
+  inset: 0 !important;
   width: 100% !important;
   height: 100% !important;
+  display: block !important;
 }
 
-#ar-container video,
-#ar-container canvas {
-  max-width: 100%;
+/* Lienzo de realidad aumentada */
+#ar-container canvas,
+#ar-container .a-canvas {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none;
+}
+
+/* Video de cámara */
+#ar-container video {
+  position: absolute !important;
+  max-width: none !important;
+  object-fit: cover !important;
 }
 
 footer {
@@ -144,10 +192,22 @@ footer {
 }
 
 @media (max-width: 700px) {
-  .grid { grid-template-columns: 1fr; }
-  header { padding-top: 25px; }
-  .panel-content { padding: 15px; }
-  #ar-container { min-height: 320px; height: 65vh; }
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  header {
+    padding-top: 25px;
+  }
+
+  .panel-content {
+    padding: 15px;
+  }
+
+  #ar-container {
+    min-height: 320px;
+    height: 65vh;
+  }
 }
 </style>
 
@@ -156,6 +216,7 @@ footer {
 </head>
 
 <body>
+
 <header>
   <span class="tag">HISTORIETA INTERACTIVA · REALIDAD AUMENTADA</span>
   <h1>El secreto de la computadora</h1>
@@ -170,6 +231,7 @@ footer {
   </section>
 
   <section class="grid" aria-label="Las cuatro escenas">
+
     <article class="panel">
       <img src="./escena1.png" alt="Escena 1: Vanessa descubre una computadora antigua">
       <div class="panel-content">
@@ -201,29 +263,37 @@ footer {
         <p>Vanessa estabiliza el portal y el robot regresa a casa. Antes de irse, le agradece por ayudarlo.</p>
       </div>
     </article>
+
   </section>
 
   <section class="ar">
     <h2>✨ Prueba la realidad aumentada</h2>
-    <p>Permite el acceso a la cámara y apunta a las ilustraciones. Cuando se reconozca una imagen, aparecerá un mensaje digital sobre ella.</p>
+    <p>Permite el acceso a la cámara y apunta hacia una de las cuatro ilustraciones. Cuando se reconozca, aparecerá un mensaje digital sobre ella.</p>
 
     <div class="actions">
       <button id="start-ar">Iniciar cámara AR</button>
       <button id="stop-ar" class="secondary">Detener cámara</button>
     </div>
 
-    <div id="ar-status" role="status">Estado: cámara apagada.</div>
+    <div id="ar-status" role="status" aria-live="polite">
+      Estado: cámara apagada.
+    </div>
+
     <div id="ar-container"></div>
 
-    <small>La cámara necesita permiso del navegador y una conexión HTTPS.</small>
+    <small>Se necesita permiso de cámara y conexión HTTPS.</small>
   </section>
 </main>
 
-<footer>Proyecto escolar · Realidad aumentada · Historieta de cuatro escenas</footer>
+<footer>
+  Proyecto escolar · Realidad aumentada · Historieta de cuatro escenas
+</footer>
 
 <script>
 const statusBox = document.getElementById("ar-status");
 const container = document.getElementById("ar-container");
+const startButton = document.getElementById("start-ar");
+const stopButton = document.getElementById("stop-ar");
 
 let scene = null;
 let starting = false;
@@ -239,17 +309,49 @@ function updateStatus(message) {
   statusBox.textContent = message;
 }
 
-document.getElementById("start-ar").addEventListener("click", async () => {
+function stopCurrentScene() {
+  if (scene) {
+    try {
+      const system = scene.systems &&
+        scene.systems["mindar-image-system"];
+
+      if (system) {
+        system.stop();
+      }
+    } catch (error) {
+      console.warn("No se pudo detener MindAR:", error);
+    }
+
+    scene.remove();
+    scene = null;
+  }
+
+  container.replaceChildren();
+}
+
+startButton.addEventListener("click", async () => {
   if (scene || starting) return;
 
   starting = true;
-  updateStatus("Cargando el sistema de realidad aumentada…");
+  startButton.disabled = true;
+  updateStatus("Preparando la cámara y el visor…");
 
   try {
-    // Comprobar que el archivo de marcadores exista.
-    const response = await fetch("./comic.mind", { cache: "no-store" });
+    if (!navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia) {
+      throw new Error(
+        "Tu navegador no permite acceder a la cámara. Abre la página en Chrome mediante HTTPS."
+      );
+    }
+
+    const response = await fetch("./comic.mind", {
+      cache: "no-store"
+    });
+
     if (!response.ok) {
-      throw new Error("No se encontró comic.mind. Verifica que esté en la raíz del repositorio.");
+      throw new Error(
+        "No se encontró comic.mind. Verifica que esté en la raíz del repositorio."
+      );
     }
 
     const sceneEl = document.createElement("a-scene");
@@ -258,12 +360,18 @@ document.getElementById("start-ar").addEventListener("click", async () => {
       "mindar-image",
       "imageTargetSrc: ./comic.mind; autoStart: false; uiLoading: yes; uiScanning: yes; uiError: yes; maxTrack: 1"
     );
+
     sceneEl.setAttribute("embedded", "");
     sceneEl.setAttribute("color-space", "sRGB");
-    sceneEl.setAttribute("renderer", "colorManagement: true");
+    sceneEl.setAttribute("renderer", "colorManagement: true; alpha: true");
     sceneEl.setAttribute("vr-mode-ui", "enabled: false");
-    sceneEl.setAttribute("device-orientation-permission-ui", "enabled: false");
+    sceneEl.setAttribute(
+      "device-orientation-permission-ui",
+      "enabled: false"
+    );
 
+    sceneEl.style.position = "absolute";
+    sceneEl.style.inset = "0";
     sceneEl.style.width = "100%";
     sceneEl.style.height = "100%";
 
@@ -272,7 +380,11 @@ document.getElementById("start-ar").addEventListener("click", async () => {
 
     for (let i = 0; i < 4; i++) {
       const target = document.createElement("a-entity");
-      target.setAttribute("mindar-image-target", `targetIndex: ${i}`);
+
+      target.setAttribute(
+        "mindar-image-target",
+        `targetIndex: ${i}`
+      );
 
       const panel = document.createElement("a-plane");
       panel.setAttribute("position", "0 0 0");
@@ -297,9 +409,19 @@ document.getElementById("start-ar").addEventListener("click", async () => {
 
       if (i === 2) {
         const robot = document.createElement("a-entity");
-        robot.setAttribute("geometry", "primitive: box; width: 0.25; height: 0.25; depth: 0.18");
-        robot.setAttribute("material", "color: #2b9ed8; metalness: 0.2");
+
+        robot.setAttribute(
+          "geometry",
+          "primitive: box; width: 0.25; height: 0.25; depth: 0.18"
+        );
+
+        robot.setAttribute(
+          "material",
+          "color: #2b9ed8; metalness: 0.2"
+        );
+
         robot.setAttribute("position", "0 -0.22 0.1");
+
         robot.setAttribute(
           "animation",
           "property: position; to: 0 -0.12 0.1; dir: alternate; dur: 900; loop: true"
@@ -309,9 +431,15 @@ document.getElementById("start-ar").addEventListener("click", async () => {
 
         for (const x of [-0.06, 0.06]) {
           const eye = document.createElement("a-entity");
-          eye.setAttribute("geometry", "primitive: sphere; radius: 0.025");
+
+          eye.setAttribute(
+            "geometry",
+            "primitive: sphere; radius: 0.025"
+          );
+
           eye.setAttribute("material", "color: white");
           eye.setAttribute("position", `${x} -0.18 0.2`);
+
           target.appendChild(eye);
         }
       }
@@ -319,34 +447,41 @@ document.getElementById("start-ar").addEventListener("click", async () => {
       sceneEl.appendChild(target);
 
       target.addEventListener("targetFound", () => {
-        updateStatus(`¡Escena ${i + 1} reconocida! ${messages[i]}`);
+        updateStatus(
+          `¡Escena ${i + 1} reconocida! ${messages[i]}`
+        );
       });
 
       target.addEventListener("targetLost", () => {
-        updateStatus("Apunta nuevamente a una de las cuatro ilustraciones.");
+        updateStatus(
+          "Apunta nuevamente a una de las cuatro ilustraciones."
+        );
       });
     }
 
-    // Cámara explícita para la escena A-Frame.
     const camera = document.createElement("a-camera");
     camera.setAttribute("position", "0 0 0");
     camera.setAttribute("look-controls", "enabled: false");
     sceneEl.appendChild(camera);
 
     sceneEl.addEventListener("arReady", () => {
-      updateStatus("¡Cámara activa! Apunta hacia una de las cuatro ilustraciones.");
+      updateStatus(
+        "¡Cámara activa! Apunta hacia una de las cuatro ilustraciones."
+      );
     });
 
     sceneEl.addEventListener("arError", () => {
-      updateStatus("No se pudo iniciar la cámara. Revisa los permisos y recarga la página.");
+      updateStatus(
+        "MindAR no pudo iniciar la cámara. Revisa los permisos y la consola."
+      );
     });
 
-    // Esperar a que A-Frame registre los componentes antes de iniciar.
     await new Promise((resolve, reject) => {
-      const timeout = setTimeout(
-        () => reject(new Error("El visor tardó demasiado en prepararse.")),
-        15000
-      );
+      const timeout = setTimeout(() => {
+        reject(
+          new Error("El visor tardó demasiado en prepararse.")
+        );
+      }, 20000);
 
       sceneEl.addEventListener("loaded", () => {
         clearTimeout(timeout);
@@ -354,44 +489,55 @@ document.getElementById("start-ar").addEventListener("click", async () => {
       }, { once: true });
     });
 
-    if (!sceneEl.systems["mindar-image-system"]) {
-      throw new Error("MindAR no se cargó. Comprueba tu conexión a internet.");
+    const mindarSystem =
+      sceneEl.systems["mindar-image-system"];
+
+    if (!mindarSystem) {
+      throw new Error(
+        "MindAR no se cargó. Comprueba tu conexión a internet."
+      );
     }
 
-    await sceneEl.systems["mindar-image-system"].start();
+    updateStatus(
+      "Iniciando cámara… acepta el permiso si el navegador lo solicita."
+    );
+
+    await mindarSystem.start();
+
+    // Esperar un momento para comprobar que MindAR haya creado el video.
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    const videos = container.querySelectorAll("video");
+
+    if (!videos.length) {
+      updateStatus(
+        "MindAR se inició, pero no creó el video de cámara. Recarga la página y revisa la consola (F12)."
+      );
+    } else {
+      updateStatus(
+        "Cámara iniciada. Apunta hacia una de las cuatro ilustraciones."
+      );
+    }
 
   } catch (error) {
-    console.error(error);
+    console.error("Error al iniciar la realidad aumentada:", error);
+
     updateStatus("Error: " + error.message);
-    if (scene) {
-      try {
-        scene.systems["mindar-image-system"]?.stop();
-      } catch (_) {}
-      scene.remove();
-      scene = null;
-    }
-    container.replaceChildren();
+
+    stopCurrentScene();
   } finally {
     starting = false;
+    startButton.disabled = false;
   }
 });
 
-document.getElementById("stop-ar").addEventListener("click", () => {
-  if (scene) {
-    try {
-      scene.systems["mindar-image-system"]?.stop();
-    } catch (error) {
-      console.warn(error);
-    }
-    scene.remove();
-    scene = null;
-  }
-
-  container.replaceChildren();
+stopButton.addEventListener("click", () => {
+  stopCurrentScene();
   starting = false;
+  startButton.disabled = false;
   updateStatus("Estado: cámara apagada.");
 });
 </script>
+
 </body>
 </html>
-```
